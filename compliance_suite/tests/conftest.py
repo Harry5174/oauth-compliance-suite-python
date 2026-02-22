@@ -1,9 +1,10 @@
 import os 
 import pytest
-
+import httpx
+from typing import Generator
 
 TARGETS = {
-    "JAVA" : "http://localhost:8000",
+    "JAVA" : "http://localhost:8080",
     "PYTHON" : "http://localhost:8000"
 }
 

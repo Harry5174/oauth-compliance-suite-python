@@ -4,17 +4,11 @@ from httpx import Client
 
 def test_missing_client_id(client: Client, target_url: str):
     """
-    RFC 6749 Section 4.1.1:
-    If the request is missing a required parameter, the authorization server
-    should return an error.
-    
     Scenario: User hits /api/authorization with NO client_id.
     Expected: 400 Bad Request (The server refuses to process it).
     """
-
     # provide response_type but omit client_id
     params =  {"response_type" : "code"}
-
 
     # 1. Construct the URL
     endpoint = f"{target_url}/api/authorization"
@@ -29,16 +23,13 @@ def test_missing_client_id(client: Client, target_url: str):
         
     data = response.json()
     assert "error" in data
-    assert data["error"] == "invalid_request"
+    assert data["error"] == "invalid_client"
 
 def test_unsupported_response_type(client: Client, target_url: str):
     """
-    RFC 6749 Section 4.1.1:
-    If the request is missing a required parameter, the authorization server
-    should return an error.
-    
-    Scenario: User hits /api/authorization with NO client_id.
-    Expected: 400 Bad Request (The server refuses to process it).
+    Scenario: User hits /api/authorization with a fake client_id.
+    Expected: Even if the response_type is garbage, the server must fail 
+    early with 'invalid_client' before evaluating the response_type.
     """
 
     # provide response_type but omit client_id
@@ -61,4 +52,4 @@ def test_unsupported_response_type(client: Client, target_url: str):
         
     data = response.json()
     assert "error" in data
-    assert data["error"] == "invalid_request"
+    assert data["error"] == "invalid_client"
