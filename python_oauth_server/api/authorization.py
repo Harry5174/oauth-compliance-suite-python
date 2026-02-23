@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Request, Resppython_oauth_server/api/authorization.pyonse
+from fastapi import APIRouter, Request, Response
 from urllib.parse import urlencode
 from authlete.api.authlete_api_impl import AuthleteApiImpl
-from authlete.conf.authlete_properties_configuration import AuthletePropertiesConfiguration
+from authlete.conf.authlete_ini_configuration import AuthleteIniConfiguration
 from authlete.dto.authorization_request import AuthorizationRequest
 
 router = APIRouter()
-conf = AuthletePropertiesConfiguration("authlete.properties")
+conf = AuthleteIniConfiguration("authlete.properties")
 authlete_api = AuthleteApiImpl(conf)
 
 # RFC 6749: MUST support GET and POST
