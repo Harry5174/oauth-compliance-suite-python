@@ -3,10 +3,13 @@ from urllib.parse import urlencode
 from authlete.api.authlete_api_impl import AuthleteApiImpl
 from authlete.conf.authlete_ini_configuration import AuthleteIniConfiguration
 from authlete.dto.authorization_request import AuthorizationRequest
+from fastapi.templating import Jinja2Templates
 
 router = APIRouter()
 conf = AuthleteIniConfiguration("authlete.properties")
 authlete_api = AuthleteApiImpl(conf)
+
+templates = Jinja2Templates(directory="templates")
 
 # RFC 6749: MUST support GET and POST
 @router.api_route("/api/authorization", methods=["GET", "POST"])
@@ -52,10 +55,16 @@ async def authorization_endpoint(request: Request):
     elif action == "NO_INTERACTION":
         # Client requested prompt=none, but user is not logged in.
         # Authlete generates the redirect back to the client with an error.
-        return Response(
-            status_code=302,
-            headers={"Location": authlete_res.responseContent, "Cache-Control": "no-store"}
+
+        #Passing ticket
+        return templates.TemplateResponse(
+            "authorization.html",
+            {"request": request, "ticket": authlete_res.ticket}
         )
+        # return Response(
+        #     status_code=302,
+        #     headers={"Location": authlete_res.responseContent, "Cache-Control": "no-store"}
+        # )
         
     else: # INTERNAL_SERVER_ERROR
         return Response(

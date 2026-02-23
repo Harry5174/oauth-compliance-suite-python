@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head><title>Authorization Required</title></head>
+<body>
+    <h2>Sign In & Consent</h2>
+    <form action="/api/authorization/decision" method="POST">
+        <input type="hidden" name="ticket" value="{{ ticket }}">
+        
+        <label>Username (Subject):</label>
+        <input type="text" name="subject" value="testuser" required><br><br>
+        
+        <label>Password:</label>
+        <input type="password" name="password" value="testpass" required><br><br>
+        
+        <button type="submit" name="authorized" value="true">Authorize</button>
+        <button type="submit" name="authorized" value="false">Deny</button>
+    </form>
+</body>
+</html>
