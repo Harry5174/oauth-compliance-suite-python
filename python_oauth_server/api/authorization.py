@@ -43,7 +43,10 @@ async def authorization_endpoint(request: Request):
         
     elif action == "INTERACTION":
         # TODO: Phase 2 - Render Jinja2 Login Form, save ticket to session
-        return Response(content="<html><body>Login Required. Ticket: " + authlete_res.ticket + "</body></html>", status_code=200, media_type="text/html")
+        return templates.TemplateResponse(
+            "authorization.html",
+            {"request": request, "ticket": authlete_res.ticket}
+        )
         
     elif action == "LOCATION":
         # 302 Redirect back to the client application
@@ -55,16 +58,10 @@ async def authorization_endpoint(request: Request):
     elif action == "NO_INTERACTION":
         # Client requested prompt=none, but user is not logged in.
         # Authlete generates the redirect back to the client with an error.
-
-        #Passing ticket
-        return templates.TemplateResponse(
-            "authorization.html",
-            {"request": request, "ticket": authlete_res.ticket}
+        return Response(
+            status_code=302,
+            headers={"Location": authlete_res.responseContent, "Cache-Control": "no-store"}
         )
-        # return Response(
-        #     status_code=302,
-        #     headers={"Location": authlete_res.responseContent, "Cache-Control": "no-store"}
-        # )
         
     else: # INTERNAL_SERVER_ERROR
         return Response(
