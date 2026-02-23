@@ -33,7 +33,7 @@ async def authorization_decision_endpoint(
 
 
         # Ask authlete to issue the code
-        authlete_res = authlete_api.authorization_issue(issue_request)
+        authlete_res = authlete_api.authorizationIssue(issue_request)
         action = authlete_res.action.name if hasattr(authlete_res.action, 'name') else str(authlete_res.action)
 
         if action == "LOCATION":
@@ -51,6 +51,6 @@ async def authorization_decision_endpoint(
         fail_request.ticket = ticket
         fail_request.reason = AuthorizationFailReason.DENIED
 
-        authlete_res = authlete_api.authorization_fail(fail_request)
+        authlete_res = authlete_api.authorizationFail(fail_request)
 
         return Response(status_code=302, headers={"Location": authlete_res.responseContent, "Cache-Control": "no-store"})
