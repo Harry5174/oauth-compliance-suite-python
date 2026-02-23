@@ -1,48 +1,65 @@
-from fastapi import APIRouter, Request, Response
-from fastapi.responses import JSONResponse
-from authlete.api.authlete_api import AuthleteApi
-from authlete.dto.authorization_request import AuthorizationRequest
-from authlete.conf.authlete_properties_configuration import AuthletePropertiesConfiguration
+from fastapi import APIRouter, Request, Resppython_oauth_server/api/authorization.pyonse
+from urllib.parse import urlencode
 from authlete.api.authlete_api_impl import AuthleteApiImpl
+from authlete.conf.authlete_properties_configuration import AuthletePropertiesConfiguration
+from authlete.dto.authorization_request import AuthorizationRequest
 
 router = APIRouter()
-
-# 1. Load configuration directly from the Java-style properties file
 conf = AuthletePropertiesConfiguration("authlete.properties")
 authlete_api = AuthleteApiImpl(conf)
 
-@router.get("/api/authorization")
+# RFC 6749: MUST support GET and POST
+@router.api_route("/api/authorization", methods=["GET", "POST"])
 async def authorization_endpoint(request: Request):
     """
-    The Delegated Protocol Engine Pattern.
+    Complete Action Dispatcher for the Authorization Endpoint.
     """
-    query_string = request.url.query
-    
+    # 1. Extract Parameters (Handle both GET query and POST form)
+    if request.method == "GET":
+        parameters = request.url.query
+    else:
+        form_data = await request.form()
+        parameters = urlencode(form_data) # Convert form to URL-encoded string
+
+    # 2. Call Authlete
     authlete_req = AuthorizationRequest()
-    authlete_req.parameters = query_string
-    
-    # 2. Call Authlete (SDK automatically uses the Access Token for v3)
+    authlete_req.parameters = parameters
     authlete_res = authlete_api.authorization(authlete_req)
-    action = authlete_res.action
     
-    # 3. Action Dispatcher
+    # In authlete-python, the action is an Enum. We get its name.
+    action = authlete_res.action.name if hasattr(authlete_res.action, 'name') else str(authlete_res.action)
+
+    # 3. The Complete Action Switch (Mirroring Java Reference)
     if action == "BAD_REQUEST":
         return Response(
             content=authlete_res.responseContent,
             status_code=400,
-            media_type="application/json"
+            media_type="application/json",
+            headers={"Cache-Control": "no-store", "Pragma": "no-cache"}
         )
         
     elif action == "INTERACTION":
-        # Placeholder for Phase 2
-        return Response(content="<html>Login Page Placeholder</html>", status_code=200, media_type="text/html")
+        # TODO: Phase 2 - Render Jinja2 Login Form, save ticket to session
+        return Response(content="<html><body>Login Required. Ticket: " + authlete_res.ticket + "</body></html>", status_code=200, media_type="text/html")
         
-    elif action == "INTERNAL_SERVER_ERROR":
+    elif action == "LOCATION":
+        # 302 Redirect back to the client application
+        return Response(
+            status_code=302,
+            headers={"Location": authlete_res.responseContent, "Cache-Control": "no-store"}
+        )
+        
+    elif action == "NO_INTERACTION":
+        # Client requested prompt=none, but user is not logged in.
+        # Authlete generates the redirect back to the client with an error.
+        return Response(
+            status_code=302,
+            headers={"Location": authlete_res.responseContent, "Cache-Control": "no-store"}
+        )
+        
+    else: # INTERNAL_SERVER_ERROR
         return Response(
             content=authlete_res.responseContent,
             status_code=500,
             media_type="application/json"
         )
-        
-    else:
-        return JSONResponse({"error": "server_error", "action": action}, status_code=500)
