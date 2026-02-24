@@ -4,6 +4,7 @@ from authlete.api.authlete_api_impl import AuthleteApiImpl
 from authlete.conf.authlete_ini_configuration import AuthleteIniConfiguration
 from authlete.dto.authorization_request import AuthorizationRequest
 from fastapi.templating import Jinja2Templates
+import json
 
 router = APIRouter()
 conf = AuthleteIniConfiguration("authlete.properties")
@@ -28,6 +29,8 @@ async def authorization_endpoint(request: Request):
     authlete_req = AuthorizationRequest()
     authlete_req.parameters = parameters
     authlete_res = authlete_api.authorization(authlete_req)
+
+    print("ticket before authorization: ", json.dumps(authlete_res.ticket, indent=4))    
     
     # In authlete-python, the action is an Enum. We get its name.
     action = authlete_res.action.name if hasattr(authlete_res.action, 'name') else str(authlete_res.action)
