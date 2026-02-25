@@ -18,8 +18,7 @@ templates = Jinja2Templates(directory="templates")
 
 # Mock User Database
 MOCK_USERS = {
-    "testuser": "testpass",
-    "john": "john"
+    "john" : "testpass"
 }
 
 @router.post("/api/authorization/decision")
