@@ -45,7 +45,6 @@ async def authorization_endpoint(request: Request):
         )
         
     elif action == "INTERACTION":
-        # TODO: Phase 2 - Render Jinja2 Login Form, save ticket to session
         return templates.TemplateResponse(
             "authorization.html",
             {"request": request, "ticket": authlete_res.ticket}

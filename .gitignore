@@ -10,3 +10,4 @@ wheels/
 .venv
 authlete.properties
 .env
+.env.local
