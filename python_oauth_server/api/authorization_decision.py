@@ -1,3 +1,4 @@
+import json
 from fastapi import APIRouter, Request, Response, Form
 from authlete.api.authlete_api_impl import AuthleteApiImpl
 from authlete.conf.authlete_ini_configuration import AuthleteIniConfiguration
@@ -18,7 +19,8 @@ templates = Jinja2Templates(directory="templates")
 
 # Mock User Database
 MOCK_USERS = {
-    "john" : "john" # subject : password
+    "john" : "john", # subject : password
+    "max" : "max"
 }
 
 @router.post("/api/authorization/decision")
@@ -60,7 +62,7 @@ async def authorization_decision_endpoint(
                 headers={"Location": authlete_res.responseContent, "Cache-Control": "no-store"}
             )
         else:
-            return Response(content=authlete_res.responseContent, status_code=500)
+            return Response(content=json.dumps(authlete_res, indent=4), status_code=500)
 
     else:
         # 3. USER DENIED CONSENT
