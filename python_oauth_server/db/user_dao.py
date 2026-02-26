@@ -22,3 +22,12 @@ class UserDao:
     def get_by_login_id(cls, login_id: str):
         users = cls._load_users()
         return users.get(login_id)
+
+    @classmethod
+    def get_by_subject(cls, subject: str):
+        users = cls._load_users()
+        # Search the loaded users for a matching subject ID
+        for user in users.values():
+            if user["subject"] == subject:
+                return user
+        return None
