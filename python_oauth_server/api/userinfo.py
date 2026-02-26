@@ -36,10 +36,15 @@ async def userinfo_endpoint(request: Request, authorization: str = Header(None))
         # 4. Populate the standard OIDC claims
         claims = {"sub": subject}
 
-        if user_record:
-            # Map database fields to standard OpenID Connect claim names
-            claims["name"] = user_record.get("name")
-            claims["email"] = user_record.get("email")
+        # 4. Populate claims based on Authlete's scope filtering
+        if user_record and res.claims:
+            # Authlete returns a list of allowed claim names (e.g., ["name", "email"])
+            allowed_claims = res.claims
+            
+            if "name" in allowed_claims:
+                claims["name"] = user_record.get("name")
+            if "email" in allowed_claims:
+                claims["email"] = user_record.get("email")
 
         # 5. Issue the Final Response
         issue_req = UserInfoIssueRequest()
