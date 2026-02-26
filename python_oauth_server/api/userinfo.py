@@ -4,6 +4,7 @@ from authlete.api.authlete_api_impl import AuthleteApiImpl
 from authlete.conf.authlete_ini_configuration import AuthleteIniConfiguration
 from authlete.dto.userinfo_request import UserInfoRequest
 from authlete.dto.userinfo_issue_request import UserInfoIssueRequest
+from db.user_dao import UserDao
 
 router = APIRouter()
 conf = AuthleteIniConfiguration("authlete.properties")
@@ -28,14 +29,19 @@ async def userinfo_endpoint(request: Request, authorization: str = Header(None))
     action = res.action.name if hasattr(res.action, 'name') else str(res.action)
 
     if action == "OK":
-        # 3. Gather Claims (Mock Database Lookup)
         subject = res.subject
-        # In a real app, query DB: SELECT email, name FROM users WHERE id = subject
-        claims = {
-            "sub": subject
-        }
 
-        # 4. Issue the Final Response
+        # 3. Fetch the real user record from db
+        user_record = UserDao.get_by_subject(subject)
+        # 4. Populate the standard OIDC claims
+        claims = {"sub": subject}
+
+        if user_record:
+            # Map database fields to standard OpenID Connect claim names
+            claims["name"] = user_record.get("name")
+            claims["email"] = user_record.get("email")
+
+        # 5. Issue the Final Response
         issue_req = UserInfoIssueRequest()
         issue_req.token = token
         issue_req.claims = json.dumps(claims)

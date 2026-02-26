@@ -26,7 +26,7 @@ def test_userinfo_endpoint(client: Client, target_url: str):
     # -------------------------------------------------------------------------
     # 1. SETUP: Get the Access Token
     # -------------------------------------------------------------------------
-    params = {"response_type": "code", "client_id": CLIENT_ID, "scope": "openid", "redirect_uri": REDIRECT_URI}
+    params = {"response_type": "code", "client_id": CLIENT_ID, "scope": "openid profile email", "redirect_uri": REDIRECT_URI}
     init_res = client.get(f"{target_url}/api/authorization", params=params)
     
     ticket = None
@@ -70,3 +70,7 @@ def test_userinfo_endpoint(client: Client, target_url: str):
     data = userinfo_res.json()
     assert "sub" in data, "UserInfo response MUST contain a 'sub' claim"
     assert data["sub"] == EXPECTED_SUB, f"Expected subject '{EXPECTED_SUB}', got {data.get('sub')}"
+    
+    # NEW INVARIANTS: Check for the profile data from our JSON storage
+    assert "name" in data, "Response missing 'name' claim"
+    assert "email" in data, "Response missing 'email' claim"
