@@ -1,28 +1,21 @@
 import json
+import time
 from fastapi import APIRouter, Request, Response, Form
 from authlete.api.authlete_api_impl import AuthleteApiImpl
 from authlete.conf.authlete_ini_configuration import AuthleteIniConfiguration
 from fastapi.templating import Jinja2Templates
 from authlete.dto.authorization_issue_request import AuthorizationIssueRequest
 from authlete.dto.authorization_fail_request import AuthorizationFailRequest
+from db.user_dao import UserDao
 try:
     from authlete.types.authorization_fail_reason import AuthorizationFailReason
 except ModuleNotFoundError:
     from authlete.dto.authorization_fail_reason import AuthorizationFailReason
 
-import json
-
 router = APIRouter()
 conf = AuthleteIniConfiguration("authlete.properties")
 authlete_api = AuthleteApiImpl(conf)
 templates = Jinja2Templates(directory="templates")
-
-# Updated Mock Database
-MOCK_USERS = {
-    "john": {"password": "john", "sub": "1001"},
-    "jane": {"password": "jane", "sub": "1002"},
-    "max":  {"password": "max",  "sub": "1003"}
-}
 
 @router.post("/api/authorization/decision")
 async def authorization_decision_endpoint(
@@ -35,7 +28,7 @@ async def authorization_decision_endpoint(
     if authorized == "true":
         
         # Look up user record
-        user_record = MOCK_USERS.get(subject)
+        user_record = UserDao.get_by_login_id(subject)
 
         # 1. AUTHENTICATION CHECK
         if not user_record or user_record['password'] != password:
@@ -53,9 +46,10 @@ async def authorization_decision_endpoint(
         # 2. AUTHORIZATION (The Happy Path)
         issue_request = AuthorizationIssueRequest()
         issue_request.ticket = ticket
+        issue_request.subject = user_record['subject']
 
-        # Injecting the internal database ID, Same as java-oauth server
-        issue_request.subject = user_record['sub']
+        # 4. FIX: ADD AUTH_TIME (Current time in seconds since epoch)
+        issue_request.authTime = int(time.time())
 
         # Ask authlete to issue the code
         authlete_res = authlete_api.authorizationIssue(issue_request)

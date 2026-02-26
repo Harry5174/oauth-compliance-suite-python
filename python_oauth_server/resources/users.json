@@ -1,0 +1,5 @@
+[
+    {"loginId": "john", "password": "john", "subject": "1001", "name": "John Doe", "email": "john@example.com"},
+    {"loginId": "jane", "password": "jane", "subject": "1002", "name": "Jane Doe", "email": "jane@example.com"},
+    {"loginId": "max",  "password": "max",  "subject": "1003", "name": "Max Doe",  "email": "max@example.com"}
+]
