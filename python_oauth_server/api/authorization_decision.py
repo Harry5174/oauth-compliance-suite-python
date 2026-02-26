@@ -17,10 +17,11 @@ conf = AuthleteIniConfiguration("authlete.properties")
 authlete_api = AuthleteApiImpl(conf)
 templates = Jinja2Templates(directory="templates")
 
-# Mock User Database
+# Updated Mock Database
 MOCK_USERS = {
-    "john" : "john", # subject : password
-    "max" : "max"
+    "john": {"password": "john", "sub": "1001"},
+    "jane": {"password": "jane", "sub": "1002"},
+    "max":  {"password": "max",  "sub": "1003"}
 }
 
 @router.post("/api/authorization/decision")
@@ -33,8 +34,11 @@ async def authorization_decision_endpoint(
 ):
     if authorized == "true":
         
+        # Look up user record
+        user_record = MOCK_USERS.get(subject)
+
         # 1. AUTHENTICATION CHECK
-        if not subject or MOCK_USERS.get(subject) != password:
+        if not user_record or user_record['password'] != password:
             # Match Java Behavior: Abort the flow immediately.
             fail_request = AuthorizationFailRequest()
             fail_request.ticket = ticket
@@ -49,7 +53,9 @@ async def authorization_decision_endpoint(
         # 2. AUTHORIZATION (The Happy Path)
         issue_request = AuthorizationIssueRequest()
         issue_request.ticket = ticket
-        issue_request.subject = subject 
+
+        # Injecting the internal database ID, Same as java-oauth server
+        issue_request.subject = user_record['sub']
 
         # Ask authlete to issue the code
         authlete_res = authlete_api.authorizationIssue(issue_request)
