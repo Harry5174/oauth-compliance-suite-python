@@ -4,15 +4,11 @@ from urllib.parse import urlencode
 from authlete.api.authlete_api_impl import AuthleteApiImpl
 from authlete.conf.authlete_ini_configuration import AuthleteIniConfiguration
 from authlete.dto.standard_introspection_request import StandardIntrospectionRequest
+from db.resource_server_dao import ResourceServerDao
 
 router = APIRouter()
 conf = AuthleteIniConfiguration("authlete.properties")
 authlete_api = AuthleteApiImpl(conf)
-
-# Mock Database for Resource Servers
-MOCK_RESOURCE_SERVERS = {
-    "rs0": "rs0-secret" 
-}
 
 @router.post("/api/introspection")
 async def introspection_endpoint(
@@ -33,21 +29,23 @@ async def introspection_endpoint(
     except Exception:
         return Response(status_code=401, content="Invalid Basic Auth format")
 
-    if MOCK_RESOURCE_SERVERS.get(rs_id) != rs_secret:
+    # 2. Use the DAO for strict architectural separation
+    rs_record = ResourceServerDao.get(rs_id)
+    if not rs_record or rs_record.get("secret") != rs_secret:
         return Response(status_code=401, content="Invalid Resource Server credentials")
 
-    # 2. Parse the token payload
+    # 3. Parse the token payload
     form_data = await request.form()
     parameters = urlencode(form_data)
     
-    # 3. Call Authlete
+    # 4. Call Authlete
     req = StandardIntrospectionRequest()
     req.parameters = parameters
     
     res = authlete_api.standardIntrospection(req)
     action = res.action.name if hasattr(res.action, 'name') else str(res.action)
     
-    # 4. Handle the Protocol Response
+    # 5. Handle the Protocol Response
     status_code = 200
     if action == "INTERNAL_SERVER_ERROR": status_code = 500
     elif action == "BAD_REQUEST": status_code = 400
