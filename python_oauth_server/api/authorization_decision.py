@@ -55,14 +55,29 @@ async def authorization_decision_endpoint(
         authlete_res = authlete_api.authorizationIssue(issue_request)
         action = authlete_res.action.name if hasattr(authlete_res.action, 'name') else str(authlete_res.action)
 
+        # Handle the OIDC state machine
         if action == "LOCATION":
-            # Sucess, Authlete generated the callback URL with the ?code=xxx attached
+            # Standard Authorization Code flow
             return Response(
-                status_code=302,
+                status_code=302, 
                 headers={"Location": authlete_res.responseContent, "Cache-Control": "no-store"}
             )
+        elif action == "FORM":
+            # Hybrid Flow or form_post response mode
+            return Response(
+                content=authlete_res.responseContent,
+                status_code=200,
+                media_type="text/html;charset=UTF-8",
+                headers={"Cache-Control": "no-store"}
+            )
         else:
-            return Response(content=json.dumps(authlete_res, indent=4), status_code=500)
+            # Fallback for INTERNAL_SERVER_ERROR or unexpected actions
+            # FIX: Ensure we return the string content, not the Python object
+            return Response(
+                content=authlete_res.responseContent, 
+                status_code=500,
+                media_type="application/json"
+            )
 
     else:
         # 3. USER DENIED CONSENT
