@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from api import authorization, token, authorization_decision, metadata, userinfo, introspection, revocation, par
+from api import authorization, token, authorization_decision, metadata, userinfo, introspection, revocation, par, register
 
 app = FastAPI(title="Authlete Python Reference Server")
 
@@ -11,3 +11,4 @@ app.include_router(userinfo.router)
 app.include_router(introspection.router)
 app.include_router(revocation.router)
 app.include_router(par.router)
+app.include_router(register.router)
