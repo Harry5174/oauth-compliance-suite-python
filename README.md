@@ -79,6 +79,10 @@ The following table documents every endpoint currently implemented and the RFC o
 | **Advanced Security** | `/api/par` | `POST` | RFC 9126 (Pushed Authorization Requests) | ✅ Implemented |
 | **AI Agent Provisioning** | `/api/register` | `POST` | RFC 7591 (Dynamic Client Registration) | ✅ Implemented |
 | **Grant Lifecycle** | `/api/gm/{grantId}` | `GET`, `DELETE` | RFC 9356 (Grant Management for OAuth 2.0) | ✅ Implemented |
+| **Federation** | `/.well-known/openid-federation` | `GET` | OpenID Federation 1.0 | ⏳ In Development |
+| **Federation** | `/api/federation/register` | `POST` | OpenID Federation 1.0 (Explicit Registration) | ⏳ In Development |
+| **Verifiable Credentials** | `/.well-known/openid-credential-issuer` | `GET` | OID4VCI (Credential Issuer Metadata) | ⏳ In Development |
+| **Verifiable Credentials** | `/.well-known/jwt-issuer` | `GET` | RFC 8414 / SD-JWT VC (JWT Issuer Metadata) | ⏳ In Development |
 
 ### Endpoint Notes
 
