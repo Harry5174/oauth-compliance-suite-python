@@ -79,9 +79,9 @@ The following table documents every endpoint currently implemented and the RFC o
 | **Advanced Security** | `/api/par` | `POST` | RFC 9126 (Pushed Authorization Requests) | ✅ Implemented |
 | **AI Agent Provisioning** | `/api/register` | `POST` | RFC 7591 (Dynamic Client Registration) | ✅ Implemented |
 | **Grant Lifecycle** | `/api/gm/{grantId}` | `GET`, `DELETE` | RFC 9356 (Grant Management for OAuth 2.0) | ✅ Implemented |
-| **Federation** | `/.well-known/openid-federation` | `GET` | OpenID Federation 1.0 | ⏳ In Development |
-| **Federation** | `/api/federation/register` | `POST` | OpenID Federation 1.0 (Explicit Registration) | ⏳ In Development |
-| **Verifiable Credentials** | `/.well-known/openid-credential-issuer` | `GET` | OID4VCI (Credential Issuer Metadata) | ⏳ In Development |
+| **Federation** | `/.well-known/openid-federation` | `GET` | OpenID Federation 1.0 | ✅ Implemented |
+| **Federation** | `/api/federation/register` | `POST` | OpenID Federation 1.0 (Explicit Registration) | ✅ Implemented |
+| **Verifiable Credentials** | `/.well-known/openid-credential-issuer` | `GET` | OID4VCI (Credential Issuer Metadata) | ✅ Implemented |
 | **Verifiable Credentials** | `/.well-known/jwt-issuer` | `GET` | RFC 8414 / SD-JWT VC (JWT Issuer Metadata) | ⏳ In Development |
 
 ### Endpoint Notes
@@ -92,6 +92,9 @@ The following table documents every endpoint currently implemented and the RFC o
 - **`/api/par`** — Supports both `Basic` Authorization header and form-body credential extraction. Returns `201 Created` on success with a `request_uri` for subsequent use at `/api/authorization`.
 - **`/api/register`** — Accepts a raw JSON body per RFC 7591. Does not require an Initial Access Token to align with the `java-oauth-server` reference configuration.
 - **`/api/gm/{grantId}`** — `GET` maps to the `QUERY` action; `DELETE` maps to the `REVOKE` action. Requires a valid Bearer token in the `Authorization` header.
+- **`/.well-known/openid-credential-issuer`** — Delegates to `authlete_api.credentialIssuerMetadata()` via a `CredpentialIssuerMetadataRequest` DTO. Returns the OID4VCI Credential Issuer Metadata document describing the Verifiable Credentials this IdP can issue. Dispatches `OK` (200), `NOT_FOUND` (404), and `INTERNAL_SERVER_ERROR` (500) actions.
+- **`/.well-known/openid-federation`** — Delegates to `authlete_api.federationConfiguration()` via a `FederationConfigurationRequest` DTO. Returns a signed JWT (Entity Statement) representing this IdP's trust metadata. On `OK`, the response is served with the spec-required `application/entity-statement+jwt` content type. Dispatches `OK` (200), `NOT_FOUND` (404), and `INTERNAL_SERVER_ERROR` (500) actions.
+- **`/api/federation/register`** — Accepts a raw Entity Statement JWT in the request body. Delegates to `authlete_api.federationRegistration()` via a `FederationRegistrationRequest` DTO. Registers the client if the Trust Chain is valid. Dispatches `CREATED` (201), `BAD_REQUEST` (400), and `INTERNAL_SERVER_ERROR` (500) actions.
 
 ---
 
