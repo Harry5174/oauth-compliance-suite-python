@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from api import authorization, token, authorization_decision, metadata, userinfo, introspection, revocation, par, register, gm, federation_configuration
+from api import authorization, token, authorization_decision, metadata, userinfo, introspection, revocation, par, register, gm, federation_configuration, federation_registration
 
 app = FastAPI(title="Authlete Python Reference Server")
 
@@ -14,3 +14,4 @@ app.include_router(par.router)
 app.include_router(register.router)
 app.include_router(gm.router)
 app.include_router(federation_configuration.router)
+app.include_router(federation_registration.router)
