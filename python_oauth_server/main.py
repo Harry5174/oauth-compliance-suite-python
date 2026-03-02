@@ -1,5 +1,8 @@
+import sdk_compat_patch
+sdk_compat_patch.apply_all()
+
 from fastapi import FastAPI
-from api import authorization, token, authorization_decision, metadata, userinfo, introspection, revocation, par, register, gm, federation_configuration, federation_registration, credential_issuer_metadata
+from api import authorization, token, authorization_decision, metadata, userinfo, introspection, revocation, par, register, gm, federation_configuration, federation_registration, credential_issuer_metadata, credential, jwt_issuer_metadata
 
 app = FastAPI(title="Authlete Python Reference Server")
 
@@ -16,3 +19,5 @@ app.include_router(gm.router)
 app.include_router(federation_configuration.router)
 app.include_router(federation_registration.router)
 app.include_router(credential_issuer_metadata.router)
+app.include_router(credential.router)
+app.include_router(jwt_issuer_metadata.router)
